@@ -1,29 +1,75 @@
 
-import urllib
-import urllib2
-import json
+import requests
 
 
-class DistributionServer(object):
+class ConcurrencyStub(object):
 
-    DISTRIBUTION_ROUTE = "/dist"
+    OCCUPIED_ROUTE = "/occupied"
 
-    def __init__(self, hostname, port):
-        self.hostname = hostname
+    def __init__(self, host, port):
+        self.hostname = host
         self.port = port
-        self.address = "http://{}:{}".format(hostname, port)
+        self.address = "http://{}:{}".format(host, port)
+
+    def get_occupied(self):
+        url = self.address + self.OCCPUIED_ROUTE
+        r = requests.get(url)
+        if not r.status_code == 200:
+            raise RuntimeError("HTTP SHIT")
+        return set(r.json())
+
+    def update_occupied(self, past_id, next_id):
+        url = self.address + self.OCCUPIED_ROUTE
+        data = {"past_id": past_id, "next_id": next_id}
+        r = requests.post(url, payload=data)
+        if not r.status_code == 200:
+            raise RuntimeError("HTTP SHIT")
+
+        return r.json()
+
+
+class DistributionStub(object):
+
+    GET_DIST_ROUTE = "/get_info"
+    POST_DIST_ROUTE = "/update_info"
+    BOX_ROUTE = "/box"
+
+    def __init__(self, host, port):
+        self.hostname = host
+        self.port = port
+        self.address = "http://{}:{}".format(host, port)
 
     def get_distribution(self, time, node_id):
-        url = self.address + self.DISTRIBUTION_ROUTE
-        data = {"time": time, "node_id": node_id}
-        encdata = urllib.urlencode(data)
-        req = urllib2.Request(url=url, data=encdata)
-        res_str = urllib2.urlopen(req).read()
-        res_dict = json.loads(res_str)
-        if res_dict["error"] > 0:
-            raise RuntimeError("balls")
+        url = (self.address + self.GET_DIST_ROUTE + "/{}/{}")\
+            .format(node_id, time)
+        r = requests.get(url)
+        if not r.status_code == 200:
+            raise RuntimeError("HTTP SHIT")
         else:
-            return res_dict["dist"]
+            return r.json()["value"]
 
     def update_distribution(self, time, node_id, value):
-        pass
+        url = self.address + self.POST_DIST_ROUTE
+        data = {"time": time, "node_id": node_id, "value": value}
+        r = requests.post(url, payload=data)
+        if not r.status_code == 200:
+            raise RuntimeError("HTTP SHIT")
+
+        return self
+
+    def get_bounding_box(self):
+        url = self.address + self.BOX_ROUTE
+        r = requests.get(url)
+        if not r.status_code == 200:
+            raise RuntimeError("HTTP SHIT")
+        j = r.json()
+
+        return j["left"], j["bottom"], j["right"], j["top"]
+
+
+def make_ds(host, port):
+    return DistributionServer(host, port)
+
+
+def make_cs(host, port):
+    return ConcurrencyServer(host, port)

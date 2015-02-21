@@ -2,6 +2,7 @@ import networkx as nx
 from osm import *
 import geopy as geo
 from geopy.distance import distance
+import numpy as np
 
 
 def make_weighted(G):
@@ -62,3 +63,4 @@ if __name__ == "__main__":
     G = read_osm(download_osm(-2.8473, 56.3207, -2.7600, 56.3672))
     G, max_distance = make_weighted(G)
     G = simplify_by_degree(G, max_distance)
+    data = nx.all_pairs_shortest_path(G)
