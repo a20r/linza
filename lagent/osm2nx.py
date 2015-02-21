@@ -51,11 +51,14 @@ def simplify_by_degree(G, max_distance):
     return G_simple
 
 
-def get_osm_graph():
-    pass
+def get_osm_graph(left, bottom, right, top):
+    G = read_osm(download_osm(left, bottom, right, top))
+    G, max_distance = make_weighted(G)
+    G = simplify_by_degree(G, max_distance)
+    return G
 
 
 if __name__ == "__main__":
     G = read_osm(download_osm(-2.8473, 56.3207, -2.7600, 56.3672))
     G, max_distance = make_weighted(G)
-    G = simplify_by_degree(G,max_distance)
+    G = simplify_by_degree(G, max_distance)
