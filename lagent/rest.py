@@ -12,19 +12,14 @@ class ConcurrencyStub(object):
         self.address = "http://{}:{}".format(host, port)
 
     def get_occupied(self):
-        url = self.address + self.OCCPUIED_ROUTE
+        url = self.address + self.OCCUPIED_ROUTE
         r = requests.get(url)
-        if not r.status_code == 200:
-            raise RuntimeError("HTTP SHIT")
         return set(r.json())
 
     def update_occupied(self, past_id, next_id):
         url = self.address + self.OCCUPIED_ROUTE
-        data = {"past_id": past_id, "next_id": next_id}
+        data = {"prev": past_id, "nxt": next_id}
         r = requests.post(url, payload=data)
-        if not r.status_code == 200:
-            raise RuntimeError("HTTP SHIT")
-
         return r.json()
 
 
@@ -64,12 +59,12 @@ class DistributionStub(object):
             raise RuntimeError("HTTP SHIT")
         j = r.json()
 
-        return j["left"], j["bottom"], j["right"], j["top"]
+        return j["Left"], j["Bottom"], j["Right"], j["Top"]
 
 
 def make_ds(host, port):
-    return DistributionServer(host, port)
+    return DistributionStub(host, port)
 
 
 def make_cs(host, port):
-    return ConcurrencyServer(host, port)
+    return ConcurrencyStub(host, port)

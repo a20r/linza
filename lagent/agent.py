@@ -1,6 +1,5 @@
 
 import geopy.distance
-import osm2nx
 import networkx as nx
 import numpy as np
 import time
@@ -11,13 +10,19 @@ class Agent(object):
     NN_RADIUS = 0.2 # miles
     MIN_TIME_STEP = 0.1 # seconds
 
-    def __init__(self, cs, ds, start_index, vel_estimate, sec_eq):
+    def __init__(self, **kwargs):
+        cs = kwargs.get("cs")
+        ds = kwargs.get("ds")
+        graph = kwargs.get("graph")
+        start_index = kwargs.get("start_index")
+        vel_estimate = kwargs.get("vel_estimate")
+        sec_eq = kwargs.get("sec_eq")
         self.c_node = start_index
         self.sec_eq = sec_eq
         self.ds = ds
         self.cs = cs
         self.vel_estimate = float(vel_estimate)
-        self.graph = self.init_graph()
+        self.graph = graph
         self.distance_mat = self.init_distance_matrix()
         self.time_mat = self.init_time_matrix()
         self.energy_mat = self.init_energy_matrix()
@@ -33,10 +38,6 @@ class Agent(object):
     def set_info_func(self, info_func):
         self.info_func = info_func
 
-    def init_graph(self):
-        l, b, r, t = self.ds.get_bounding_box()
-        return osm2nx.get_osm_graph(l, b, r, t)
-
     def init_time_matrix(self):
         t_mat = dict()
         for i in self.graph.nodes():
@@ -51,7 +52,7 @@ class Agent(object):
                     t_mat[i][j] = self.distance_mat[i][j] /\
                         (self.sec_eq * self.vel_estimate)
                     t_mat[j][i] = self.distance_mat[j][i] /\
-                        (self.sec_eq * self.vel_estmiate)
+                        (self.sec_eq * self.vel_estimate)
                 else:
                     t_mat[i][j] = self.MIN_TIME_STEP
 
@@ -61,10 +62,10 @@ class Agent(object):
         e_mat = dict()
         for i in self.graph.nodes():
             for j in self.graph.nodes():
-                if not t_mat.has_key(i):
+                if not e_mat.has_key(i):
                     e_mat[i] = dict()
 
-                if not t_mat.has_key(j):
+                if not e_mat.has_key(j):
                     e_mat[j] = dict()
 
                 e_mat[i][j] = self.distance_mat[i][j]
@@ -73,7 +74,7 @@ class Agent(object):
         return e_mat
 
     def init_distance_matrix(self):
-        d_mat = nx.all_pairs_shortest_path(self.graph)
+        d_mat = nx.all_pairs_shortest_path_length(self.graph)
         return d_mat
 
     def learn_time(self, i, j, t):
