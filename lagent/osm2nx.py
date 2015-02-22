@@ -17,15 +17,12 @@ def make_weighted(G):
     for u, v, d in G.edges(data=True):
         u_point = geo.Point(G.node[u]['data'].lat, G.node[u]['data'].lon)
         v_point = geo.Point(G.node[v]['data'].lat, G.node[v]['data'].lon)
-        closeness = -(distance(u_point,v_point).kilometers)
+        closeness = distance(u_point,v_point).kilometers
         G[u][v]['weight'] = closeness
 
         if abs(closeness) > max_distance:
             max_distance = abs(closeness)
 
-    # Add max distance to each of the weights. Thus, the higher the weight, the closer are two nodes physically.
-    for u,v,d in G.edges(data=True):
-        G[u][v]['weight'] += max_distance
     return G, max_distance
 
 def simplify_by_degree(G, max_distance):
@@ -41,9 +38,9 @@ def simplify_by_degree(G, max_distance):
         if G_simple.degree(n) == 2:
 
             # Find the weight for the new edge
-            weight_uv_1 = G[n][G.neighbors(n)[0]]['weight'] - max_distance
-            weight_uv_2 = G[n][G.neighbors(n)[1]]['weight'] - max_distance
-            weight_new = weight_uv_1 + weight_uv_2 + max_distance
+            weight_uv_1 = G[n][G.neighbors(n)[0]]['weight']
+            weight_uv_2 = G[n][G.neighbors(n)[1]]['weight']
+            weight_new = weight_uv_1 + weight_uv_2
 
             G_simple.add_edge(G.neighbors(n)[0],G.neighbors(n)[1], weight=weight_new)
             G_simple.remove_node(n)
