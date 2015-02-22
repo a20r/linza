@@ -1,5 +1,6 @@
 
 import requests
+import json
 
 
 class ConcurrencyStub(object):
@@ -17,8 +18,7 @@ class ConcurrencyStub(object):
     def update_occupied(self, past_id, next_id):
         url = self.address + self.OCCUPIED_ROUTE
         data = {"past_id": past_id, "next_id": next_id}
-        r = requests.post(url, payload=data)
-        return r.json()
+        requests.post(url, data=data)
 
 
 class DistributionStub(object):
@@ -41,8 +41,9 @@ class DistributionStub(object):
 
     def update_distribution(self, time, node_id, value):
         url = self.address + self.POST_DIST_ROUTE
-        data = {"time": time, "node_id": node_id, "value": value}
-        r = requests.post(url, payload=data)
+        headers = {'content-type': 'application/json'}
+        data = {"TimeStamp": int(time), "NodeID": str(node_id), "Value": value}
+        r = requests.post(url, data=json.dumps(data), headers=headers)
         if not r.status_code == 200:
             raise RuntimeError("HTTP SHIT")
 

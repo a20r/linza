@@ -1,32 +1,23 @@
 
-import networkx as nx
 from geopy.distance import great_circle
-import numpy as np
 import time
 
 
 class Agent(object):
 
-    NN_RADIUS = 0.2 # miles
-    MIN_TIME_STEP = 0.1 # seconds
-    MIN_DISTANCE_STEP = 1
+    NN_RADIUS = 1  # miles
+    MIN_TIME_STEP = 0.1  # seconds
+    MIN_DISTANCE_STEP = 0.01  # km
 
     def __init__(self, **kwargs):
-        cs = kwargs.get("cs")
-        ds = kwargs.get("ds")
-        graph = kwargs.get("graph")
-        start_index = kwargs.get("start_index")
-        vel_estimate = kwargs.get("vel_estimate")
-        sec_eq = kwargs.get("sec_eq")
-        self.c_node = start_index
-        self.sec_eq = sec_eq
-        self.ds = ds
-        self.cs = cs
-        self.vel_estimate = float(vel_estimate)
-        self.graph = graph
-        self.distance_mat = self.init_distance_matrix()
-        self.time_mat = self.init_time_matrix()
-        self.energy_mat = self.init_energy_matrix()
+        self.cs = kwargs.get("cs")
+        self.ds = kwargs.get("ds")
+        self.graph = kwargs.get("graph")
+        self.c_node = kwargs.get("start_index")
+        self.vel_estimate = float(kwargs.get("vel_estimate"))
+        self.distance_mat = kwargs.get("distance_mat")
+        self.time_mat = dict()
+        self.energy_mat = dict()
         self.time_func = None
         self.energy_func = None
 
@@ -36,57 +27,69 @@ class Agent(object):
     def set_energy_func(self, energy_func):
         self.energy_func = energy_func
 
-    def set_info_func(self, info_func):
-        self.info_func = info_func
+    def set_info_funcs(self, info_funcs):
+        self.info_funcs = info_funcs
 
-    def init_time_matrix(self):
-        t_mat = dict()
-        for i in self.graph.nodes():
-            for j in self.graph.nodes():
-                if not t_mat.has_key(i):
-                    t_mat[i] = dict()
+    def get_distance(self, i, j):
+        if i == j:
+            return self.MIN_DISTANCE_STEP
+        else:
+            return self.distance_mat[i][j]
 
-                if not t_mat.has_key(j):
-                    t_mat[j] = dict()
+    def get_time(self, i, j):
+        if not i in self.time_mat or not j in self.time_mat[i]:
+            return self.get_distance(i, j) / self.vel_estimate
+        else:
+            return self.time_mat[i][j]
 
-                if not i == j:
-                    t_mat[i][j] = self.distance_mat[i][j] /\
-                        (self.sec_eq * self.vel_estimate)
-                    t_mat[j][i] = self.distance_mat[j][i] /\
-                        (self.sec_eq * self.vel_estimate)
-                else:
-                    t_mat[i][j] = self.MIN_TIME_STEP
-
-        return t_mat
-
-    def init_energy_matrix(self):
-        e_mat = dict()
-        for i in self.graph.nodes():
-            for j in self.graph.nodes():
-                if not e_mat.has_key(i):
-                    e_mat[i] = dict()
-
-                if not e_mat.has_key(j):
-                    e_mat[j] = dict()
-
-                if not i == j:
-                    e_mat[i][j] = self.distance_mat[i][j]
-                    e_mat[j][i] = self.distance_mat[j][i]
-                else:
-                    e_mat[i][j] = self.MIN_DISTANCE_STEP
-
-        return e_mat
-
-    def init_distance_matrix(self):
-        d_mat = nx.all_pairs_shortest_path_length(self.graph)
-        return d_mat
+    def get_energy(self, i, j):
+        if not i in self.energy_mat or not j in self.energy_mat[i]:
+            return self.get_distance(i, j)
+        else:
+            return self.energy_mat[i][j]
 
     def learn_time(self, i, j, t):
-        self.time_mat[i][j] = 0.9 * self.time_mat[i][j] + 0.1 * t
+        if i == j:
+            return self
+
+        if not i in self.time_mat:
+            self.time_mat[i] = dict()
+
+        if not j in self.time_mat:
+            self.time_mat[j] = dict()
+
+        if j in self.time_mat[i]:
+            self.time_mat[i][j] = 0.9 * self.time_mat[i][j] + 0.1 * t
+        else:
+            self.time_mat[i][j] = t
+
+        if i in self.time_mat[j]:
+            self.time_mat[j][i] = 0.9 * self.time_mat[j][i] + 0.1 * t
+        else:
+            self.time_mat[j][i] = t
+
         return self
 
-    def learn_energy(self, i, j, e):
-        self.energy_mat[i][j] = 0.9 * self.energy_mat[i][j] + 0.1 * e
+    def learn_energy(self, i, j, t):
+        if i == j:
+            return self
+
+        if not i in self.energy_mat:
+            self.energy_mat[i] = dict()
+
+        if not j in self.energy_mat:
+            self.energy_mat[j] = dict()
+
+        if j in self.energy_mat[i]:
+            self.energy_mat[i][j] = 0.9 * self.energy_mat[i][j] + 0.1 * t
+        else:
+            self.energy_mat[i][j] = t
+
+        if i in self.energy_mat[j]:
+            self.energy_mat[j][i] = 0.9 * self.energy_mat[j][i] + 0.1 * t
+        else:
+            self.energy_mat[j][i] = t
+
         return self
 
     def nearest_neighbours(self, lat, lon):
@@ -102,12 +105,12 @@ class Agent(object):
         return neighbours
 
     def weight(self, i, j, t):
-        arival_time = t + self.time_mat[i][j]
+        arival_time = t + self.get_time(i, j)
         information = self.ds.get_distribution(arival_time, i)
-        energy = self.energy_mat[i][j]
+        energy = self.get_energy(i, j)
         return information / energy
 
-    def step(self):
+    def step(self, c_time):
         occupied = self.cs.get_occupied()
         lat = self.graph.node[self.c_node]["data"].lat
         lon = self.graph.node[self.c_node]["data"].lon
@@ -115,22 +118,28 @@ class Agent(object):
         s_nbrs = neighbours - occupied
         max_weight = 0
         next_node = None
-        c_time = time.time()
         for nbr in s_nbrs:
             wght = self.weight(self.c_node, nbr, c_time)
             if wght > max_weight:
-                max_weight = weight
+                max_weight = wght
                 next_node = nbr
 
-        self.cs.update_occupied(c_node, next_node)
-        dist = self.distance_mat[c_node][next_node]
-        time_needed = self.time_func(dist) / self.sec_eq
+        self_weight = self.weight(self.c_node, self.c_node,
+                                  c_time + self.MIN_TIME_STEP)
+
+        if max_weight < self_weight and not self.c_node in occupied:
+            next_node = self.c_node
+
+        self.cs.update_occupied(self.c_node, next_node)
+        dist = self.get_distance(self.c_node, next_node)
+        time_needed = self.time_func(dist)
         energy_needed = self.energy_func(dist)
 
         # learns the time and energy matrices
-        self.learn_time(c_node, next_node, time_needed)
-        self.learn_energy(c_node, next_node, energy_needed)
-        self.ds.update_distribution(c_time, c_node, self.info_func(c_time))
+        self.learn_time(self.c_node, next_node, time_needed)
+        self.learn_energy(self.c_node, next_node, energy_needed)
+        self.ds.update_distribution(c_time, self.c_node,
+                                    self.info_funcs[self.c_node](c_time))
+        old_c_node = self.c_node
         self.c_node = next_node
-        time.sleep(time_needed)
-        return self.c_node
+        return old_c_node, self.c_node, time_needed

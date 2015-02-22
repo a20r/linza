@@ -1,5 +1,4 @@
 
-import numpy as np
 import math
 import random
 
@@ -13,7 +12,7 @@ class EnergyFunc(object):
         return self.get(dist) + random.gauss(0, self.noise_std)
 
     def get(self, dist):
-        return 3.14 * np.pow(dist, 2) + 0.1
+        return 3.14 * pow(1000 * dist, 2) + 0.1
 
 
 class TimeFunc(object):
@@ -23,8 +22,11 @@ class TimeFunc(object):
         self.noise_std = noise_std
 
     def __call__(self, dist):
-        return self.get(dist) + random.gauss(0, self.noise_std)
+        ret_val = self.get(dist) + random.gauss(0, self.noise_std)
+        if ret_val < 0:
+            ret_val = self.noise_std
 
+        return ret_val
     def get(self, dist):
         return dist / self.velocity
 
@@ -32,13 +34,14 @@ class TimeFunc(object):
 class InformationFunc(object):
 
     def __init__(self, num_sps):
-        self.a = [random.gauss(0, 3) for k in xrange(num_sps)]
-        self.b = [random.gauss(0, 0.2) for k in xrange(num_sps)]
-        self.c = [random.gauss(0, 2) for k in xrange(num_sps)]
-        self.d = [random.gauss(0, 1) for k in xrange(num_sps)]
+        self.a = [random.gauss(10, 3) for k in xrange(num_sps)]
+        self.b = [random.gauss(1 / 2400.0, 0.0005) for k in xrange(num_sps)]
+        self.c = [random.gauss(0, 1.5) for k in xrange(num_sps)]
+        self.d = [random.gauss(0, 0) for k in xrange(num_sps)]
         self.num_sps = num_sps
 
     def __call__(self, t):
+        t = t % (24 * 60 * 60)
         val = 0
         for i in xrange(self.num_sps):
             val += self.a[i] * math.sin(self.b[i] * t + self.c[i]) + self.d[i]
