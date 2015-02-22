@@ -1,6 +1,6 @@
 
-import geopy.distance
 import networkx as nx
+from geopy.distance import great_circle
 import numpy as np
 import time
 
@@ -9,6 +9,7 @@ class Agent(object):
 
     NN_RADIUS = 0.2 # miles
     MIN_TIME_STEP = 0.1 # seconds
+    MIN_DISTANCE_STEP = 1
 
     def __init__(self, **kwargs):
         cs = kwargs.get("cs")
@@ -68,8 +69,11 @@ class Agent(object):
                 if not e_mat.has_key(j):
                     e_mat[j] = dict()
 
-                e_mat[i][j] = self.distance_mat[i][j]
-                e_mat[j][i] = self.distance_mat[j][i]
+                if not i == j:
+                    e_mat[i][j] = self.distance_mat[i][j]
+                    e_mat[j][i] = self.distance_mat[j][i]
+                else:
+                    e_mat[i][j] = self.MIN_DISTANCE_STEP
 
         return e_mat
 
@@ -90,8 +94,8 @@ class Agent(object):
         for name, data in self.graph.nodes(data=True):
             # check order of lat lon here
             this_pos = (lat, lon)
-            node_pos = (data["lat"], data["lon"])
-            dist = geopy.distance.great_circle(this_pos, node_pos).miles
+            node_pos = (data["data"].lat, data["data"].lon)
+            dist = great_circle(this_pos, node_pos).miles
             if dist <= self.NN_RADIUS:
                 neighbours.add(name)
 
@@ -105,15 +109,15 @@ class Agent(object):
 
     def step(self):
         occupied = self.cs.get_occupied()
-        lat = self.graph.nodes[self.c_node]["data"].lat
-        lat = self.graph.nodes[self.c_node]["data"].lon
+        lat = self.graph.node[self.c_node]["data"].lat
+        lon = self.graph.node[self.c_node]["data"].lon
         neighbours = self.nearest_neighbours(lat, lon)
         s_nbrs = neighbours - occupied
         max_weight = 0
         next_node = None
         c_time = time.time()
         for nbr in s_nbrs:
-            wght = self.weight(c_node, nbr, c_time)
+            wght = self.weight(self.c_node, nbr, c_time)
             if wght > max_weight:
                 max_weight = weight
                 next_node = nbr

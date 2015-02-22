@@ -7,8 +7,6 @@ class ConcurrencyStub(object):
     OCCUPIED_ROUTE = "/occupied"
 
     def __init__(self, host, port):
-        self.hostname = host
-        self.port = port
         self.address = "http://{}:{}".format(host, port)
 
     def get_occupied(self):
@@ -18,7 +16,7 @@ class ConcurrencyStub(object):
 
     def update_occupied(self, past_id, next_id):
         url = self.address + self.OCCUPIED_ROUTE
-        data = {"prev": past_id, "nxt": next_id}
+        data = {"past_id": past_id, "next_id": next_id}
         r = requests.post(url, payload=data)
         return r.json()
 
@@ -30,18 +28,16 @@ class DistributionStub(object):
     BOX_ROUTE = "/box"
 
     def __init__(self, host, port):
-        self.hostname = host
-        self.port = port
         self.address = "http://{}:{}".format(host, port)
 
     def get_distribution(self, time, node_id):
         url = (self.address + self.GET_DIST_ROUTE + "/{}/{}")\
-            .format(node_id, time)
+            .format(int(time), node_id)
         r = requests.get(url)
         if not r.status_code == 200:
             raise RuntimeError("HTTP SHIT")
         else:
-            return r.json()["value"]
+            return r.json()["Value"]
 
     def update_distribution(self, time, node_id, value):
         url = self.address + self.POST_DIST_ROUTE
