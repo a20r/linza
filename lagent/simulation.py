@@ -50,7 +50,6 @@ class Simulation(object):
         return osm2nx.get_osm_graph(l, b, r, t)
 
     def run(self):
-        c_time = 0
         heap = list()
         for ag in self.agents:
             heapq.heappush(heap, (0, ag))
