@@ -1,7 +1,7 @@
 
 class DistributionModel(object):
 
-    def __init__(self, num_bins=60):
+    def __init__(self, num_bins=20):
         self.num_bins = num_bins
         self.func = dict()
         self.sec_per_day = 60
@@ -13,7 +13,8 @@ class DistributionModel(object):
         return -2.8037, 56.3381, -2.7882, 56.3435
 
     def get_bin(self, time):
-        bn = self.num_bins * (int(time) % self.sec_per_day) / self.sec_per_day
+        bn = int(self.num_bins * (int(time) % self.sec_per_day) /
+                 float(self.sec_per_day))
         return bn
 
     def update_distribution(self, time, node_id, value):
@@ -25,7 +26,7 @@ class DistributionModel(object):
         if f_val:
             self.func[node_id][bn] = self.alpha * f_val + self.beta * value
         else:
-            self.func[node_id][bn] = f_val
+            self.func[node_id][bn] = value
         return self
 
     def get_distribution(self, time, node_id):
@@ -35,7 +36,7 @@ class DistributionModel(object):
         except KeyError:
             return self.large_number
 
-        if not f_val:
+        if f_val is None:
             return self.large_number
         return f_val
 

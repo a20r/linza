@@ -36,7 +36,7 @@ class InformationFunc(object):
 
     def __init__(self, num_sps):
         self.a = [random.gauss(10, 3) for k in xrange(num_sps)]
-        self.b = [random.gauss(1 / 3.0, 0.2) for k in xrange(num_sps)]
+        self.b = [random.gauss(1 / 1.0, 0.7) for k in xrange(num_sps)]
         self.c = [random.gauss(0, 10) for k in xrange(num_sps)]
         self.d = [random.gauss(0, 0) for k in xrange(num_sps)]
         self.num_sps = num_sps
