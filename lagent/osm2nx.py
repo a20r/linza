@@ -45,7 +45,6 @@ def simplify_by_degree(G, max_distance):
             G_simple.add_edge(G.neighbors(n)[0],G.neighbors(n)[1], weight=weight_new)
             G_simple.remove_node(n)
 
-    print(G_simple.number_of_nodes())
     return G_simple
 
 
