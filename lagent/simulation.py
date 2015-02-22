@@ -5,6 +5,7 @@ import osm2nx
 import concurrency
 import interp
 import heapq
+import visualisation
 import networkx as nx
 
 
@@ -13,7 +14,7 @@ class Simulation(object):
     def __init__(self, **kwargs):
         self.num_agents = kwargs.get("num_agents")
         self.num_runs = kwargs.get("num_runs")
-        self.velocity = 10.0 / 1000 # km / s
+        self.velocity = 10.0 / 1000  # km / s
         self.noise_std = 0.1
         self.i_funcs = dict()
         self.e_func = simdata.EnergyFunc(self.noise_std)
@@ -25,6 +26,7 @@ class Simulation(object):
         for n_id in self.graph.nodes():
             self.i_funcs[n_id] = simdata.InformationFunc(100)
 
+        self.vis = visualisation.Visualiser(self.graph, self.i_funcs)
         self.distance_mat = nx.all_pairs_dijkstra_path_length(self.graph)
         self.agents = self.init_agents()
 
@@ -53,8 +55,11 @@ class Simulation(object):
         heap = list()
         for ag in self.agents:
             heapq.heappush(heap, (0, ag))
+        last_node = dict()
         for i in xrange(self.num_runs):
             t, ag = heapq.heappop(heap)
             p_node, c_node, t_needed = ag.step(t)
             heapq.heappush(heap, (t + t_needed, ag))
+            # self.vis.update(last_node.get(ag, None), p_node, t)
+            last_node[ag] = p_node
             print t, self.i_funcs[p_node](t)

@@ -108,7 +108,7 @@ class Agent(object):
         arival_time = t + self.get_time(i, j)
         information = self.ds.get_distribution(arival_time, i)
         energy = self.get_energy(i, j)
-        return information / energy
+        return information
 
     def step(self, c_time):
         occupied = self.cs.get_occupied()

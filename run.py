@@ -3,6 +3,6 @@ import lagent
 
 if __name__ == "__main__":
     sim = lagent.Simulation(
-        num_runs=2000,
-        num_agents=10)
+        num_runs=10000,
+        num_agents=30)
     sim.run()

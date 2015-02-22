@@ -1,16 +1,16 @@
 
 class DistributionModel(object):
 
-    def __init__(self, num_bins=100):
+    def __init__(self, num_bins=60):
         self.num_bins = num_bins
         self.func = dict()
-        self.sec_per_day = 24 * 60 * 60
+        self.sec_per_day = 60
         self.alpha = 0.9
         self.beta = 1 - self.alpha
-        self.large_number = 100.0
+        self.large_number = 1000.0
 
     def get_bounding_box(self):
-        return -2.8473, 56.3207, -2.7600, 56.3672
+        return -2.8037, 56.3381, -2.7882, 56.3435
 
     def get_bin(self, time):
         bn = self.num_bins * (int(time) % self.sec_per_day) / self.sec_per_day

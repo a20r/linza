@@ -27,6 +27,7 @@ class TimeFunc(object):
             ret_val = self.noise_std
 
         return ret_val
+
     def get(self, dist):
         return dist / self.velocity
 
@@ -35,13 +36,13 @@ class InformationFunc(object):
 
     def __init__(self, num_sps):
         self.a = [random.gauss(10, 3) for k in xrange(num_sps)]
-        self.b = [random.gauss(1 / 2400.0, 0.0005) for k in xrange(num_sps)]
-        self.c = [random.gauss(0, 1.5) for k in xrange(num_sps)]
+        self.b = [random.gauss(1 / 3.0, 0.2) for k in xrange(num_sps)]
+        self.c = [random.gauss(0, 10) for k in xrange(num_sps)]
         self.d = [random.gauss(0, 0) for k in xrange(num_sps)]
         self.num_sps = num_sps
 
     def __call__(self, t):
-        t = t % (24 * 60 * 60)
+        t = t % (60)
         val = 0
         for i in xrange(self.num_sps):
             val += self.a[i] * math.sin(self.b[i] * t + self.c[i]) + self.d[i]
