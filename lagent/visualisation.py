@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 class Visualiser:
 
     OCCUPIED = "b"
-    FREE = "0.75"
+    FREE = "0.94"
 
     def __init__(self, G, i_funcs):
         self.G = G
@@ -39,5 +39,7 @@ class Visualiser:
         nx.draw_networkx_edges(self.G, pos)
         nx.draw_networkx_nodes(self.G, pos, node_color=self.node_color,
                                linewidths=0, node_size=node_size, alpha=0.8)
+        plt.title("Central St Andrews")
+        plt.axis("off")
         plt.draw()
         plt.pause(0.00001)

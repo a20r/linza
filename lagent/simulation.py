@@ -73,11 +73,13 @@ class Simulation(object):
         last_node = dict()
         info_table = dict()
         energy_table = dict()
+        xs = list()
+        ys = list()
         for i in xrange(self.num_runs):
             t, ag = heapq.heappop(heap)
             info, energy, p_node, c_node, t_needed = ag.step(t)
             heapq.heappush(heap, (t + t_needed, ag))
-            # self.vis.update(last_node.get(ag, None), p_node, t)
+            self.vis.update(last_node.get(ag, None), p_node, t)
             last_node[ag] = p_node
 
             if p_node in info_table and t > 0:
@@ -86,7 +88,10 @@ class Simulation(object):
             else:
                 info_table[p_node] = info
                 energy_table[p_node] = energy
-        return info_table, energy_table
+
+            xs.append(t)
+            ys.append(self.i_funcs[p_node](t))
+        return xs, ys, info_table
 
     def run_stupid(self):
         heap = list()
@@ -95,11 +100,13 @@ class Simulation(object):
         last_node = dict()
         info_table = dict()
         energy_table = dict()
+        xs = list()
+        ys = list()
         for i in xrange(self.num_runs):
             t, ag = heapq.heappop(heap)
             info, energy, p_node, c_node, t_needed = ag.step(t)
             heapq.heappush(heap, (t + t_needed, ag))
-            # self.vis.update(last_node.get(ag, None), p_node, t)
+            self.vis.update(last_node.get(ag, None), p_node, t)
             last_node[ag] = p_node
 
             if p_node in info_table and t > 0:
@@ -108,4 +115,7 @@ class Simulation(object):
             else:
                 info_table[p_node] = info
                 energy_table[p_node] = energy
-        return info_table, energy_table
+
+            xs.append(t)
+            ys.append(self.i_funcs[p_node](t))
+        return xs, ys, info_table
