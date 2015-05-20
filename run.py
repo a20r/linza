@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     sim = lagent.Simulation(
-        num_runs=100000,
+        num_runs=10000,
         num_agents=30)
 
     xs, ys, it = sim.run()
