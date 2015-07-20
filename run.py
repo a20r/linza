@@ -1,12 +1,12 @@
 
-import lagent
+import linza
 import numpy as np
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
-    sim = lagent.Simulation(
+    sim = linza.Simulation(
         num_runs=10000,
-        num_agents=30)
+        num_agents=2)
 
     xs, ys, it = sim.run()
     s_xs, s_ys, s_it = sim.run_stupid()
