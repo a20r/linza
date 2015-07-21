@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 
 class Visualizer:
 
-    OCCUPIED = "b"
-    FREE = "r"
+    OCCUPIED = "r"
+    FREE = "b"
     K = 10
 
     def __init__(self, G, resources):
@@ -21,7 +21,7 @@ class Visualizer:
         node_sizes = list()
         positions = dict()
         for r in self.G.nodes():
-            node_sizes.append(self.K * self.resources[r](t - lt[r]))
+            node_sizes.append(self.K * self.resources[r](t - lt[r]) + 40)
         for node_id in self.G.nodes():
             positions[node_id] = self.G.node[node_id]['position'].to_list_2d()
         plt.clf()

@@ -36,7 +36,7 @@ class Planner(object):
         return self.resource(i, j, t) / self.costs[i][j]
 
     def eligible_neighbours(self, i, theta):
-        N = list(set(self.graph.neighbors(i)) - set(theta))
+        N = list(set(self.graph.neighbors(i)) ^ set(theta))
         N_star = list()
         t_sum = 0.0
         for k in xrange(len(theta) - 1):
@@ -46,7 +46,9 @@ class Planner(object):
                 N_star.append(n)
         return N_star
 
-    def weight(self, i, j, t, theta=list()):
+    def weight(self, i, j, t, theta=None):
+        if theta is None:
+            theta = list()
         ret_w = self.naive_weight(i, j, t)
         for k in self.eligible_neighbours(i, theta):
             ret_w += self.weight(j, k, t + self.times[i][j], theta + [i])
@@ -56,7 +58,7 @@ class Planner(object):
         best_node = None
         max_weight = 0
         for j in self.graph.neighbors(i):
-            w = self.naive_weight(i, j, t)
+            w = self.weight(i, j, t)
             if w > max_weight:
                 best_node = j
                 max_weight = w

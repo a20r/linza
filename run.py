@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 if __name__ == "__main__":
     N = 100
     a = range(10)
-    k = 4
+    k = 10
     G = linza.nn_roadmap(N, k)
     caps = [100 for _ in xrange(N)]
     horizon = 3
@@ -21,4 +21,4 @@ if __name__ == "__main__":
         agents=a
     )
 
-    sim.run(1000)
+    print sim.run(1000)

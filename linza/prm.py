@@ -3,6 +3,7 @@ import scipy.spatial as spatial
 import numpy as np
 import networkx as nx
 import point
+import json
 
 
 def nn_roadmap(N, k):
