@@ -6,17 +6,19 @@ import planner
 
 class Linza(object):
 
-    def __init__(self, graph, capacities, horizon, agents, speed):
+    def __init__(self, graph, **kwargs):
         self.graph = graph
-        self.capacities = capacities
-        self.horizon = horizon
-        self.speed = speed
-        self.agent_heap = [(0, i, a) for a, i in enumerate(agents)]
+        self.capacities = kwargs["capacities"]
+        self.horizon = kwargs["horizon"]
+        self.speed = kwargs["speed"]
+        self.visualizer = kwargs.get("visualizer", None)
+        self.agent_heap = [(0, i, a) for a, i in enumerate(kwargs["agents"])]
         self.times = self.init_times()
         self.costs = self.init_costs()
         self.means = self.init_means()
-        self.pl = planner.Planner(self.graph, self.capacities, self.horizon,
-                                  self.times, self.costs, self.means)
+        self.pl = planner.Planner(self.graph, capacities=self.capacities,
+                                  horizon=self.horizon, times=self.times,
+                                  costs=self.costs, means=self.means)
 
     def init_times(self):
         n_nodes = len(self.graph.nodes())
@@ -62,3 +64,5 @@ class Linza(object):
             i_new, t_new = self.pl.move(i, t)
             self.pl.update_last_time(i_new, t_new)
             heapq.heappush(self.agent_heap, (t_new, i_new, a))
+            if self.visualizer:
+                self.visualizer.draw(i, i_new, t_new)

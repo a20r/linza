@@ -5,13 +5,13 @@ import math
 
 class Planner(object):
 
-    def __init__(self, graph, capacities, horizon, times, costs, means):
+    def __init__(self, graph, **kwargs):
         self.graph = graph
-        self.times = times
-        self.costs = costs
-        self.means = means
-        self.capacities = capacities
-        self.horizon = horizon
+        self.times = kwargs["times"]
+        self.costs = kwargs["costs"]
+        self.means = kwargs["means"]
+        self.capacities = kwargs["capacities"]
+        self.horizon = kwargs["horizon"]
         self.last_times = collections.defaultdict(int)
 
     def update_last_time(self, i, t):
