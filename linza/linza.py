@@ -33,7 +33,8 @@ class Linza(object):
         costs = np.zeros((n_nodes, n_nodes))
         for i in self.graph.nodes():
             for j in self.graph.neighbors(i):
-                costs[i][j] = pow(self.graph[i][j]["distance"] / self.speed, 2)
+                t = self.graph[i][j]["distance"] / self.speed
+                costs[i][j] = pow(t + 1, 2)
         return costs
 
     def init_means(self):
@@ -62,7 +63,9 @@ class Linza(object):
         for k in xrange(num_runs):
             t, i, a = heapq.heappop(self.agent_heap)
             i_new, t_new = self.pl.move(i, t)
-            self.pl.update_last_time(i_new, t_new)
             heapq.heappush(self.agent_heap, (t_new, i_new, a))
             if self.visualizer:
-                self.visualizer.draw(i, i_new, t_new)
+                self.visualizer.draw(
+                    i, i_new, t_new,
+                    self.pl.get_last_time(i_new))
+            self.pl.update_last_time(i_new, t_new)

@@ -18,6 +18,9 @@ class Planner(object):
         self.last_times[i] = t
         return self
 
+    def get_last_time(self, i):
+        return self.last_times[i]
+
     def resource(self, i, j, t):
         ret_sum = 0.0
         for k in xrange(1, self.capacities[j] + 1):
@@ -53,7 +56,7 @@ class Planner(object):
         best_node = None
         max_weight = 0
         for j in self.graph.neighbors(i):
-            w = self.weight(i, j, t)
+            w = self.naive_weight(i, j, t)
             if w > max_weight:
                 best_node = j
                 max_weight = w
