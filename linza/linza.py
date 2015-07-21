@@ -73,8 +73,8 @@ class Linza(object):
             print "To:", i_new
             print ""
             self.pl.update_last_time(i_new, t_new)
-            # if self.visualizer:
-            #     self.visualizer.draw(
-            #         i, i_new, t_new,
-            #         self.pl.last_times)
+            if self.visualizer:
+                self.visualizer.draw(
+                    i, i_new, t_new,
+                    self.pl.last_times)
         return total_resource, total_cost, t

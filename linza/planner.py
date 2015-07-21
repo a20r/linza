@@ -35,23 +35,29 @@ class Planner(object):
     def naive_weight(self, i, j, t):
         return self.resource(i, j, t) / self.costs[i][j]
 
-    def eligible_neighbours(self, i, theta):
-        N = list(set(self.graph.neighbors(i)) ^ set(theta))
+    def eligible_neighbours(self, i, T, theta):
+        N = list(set(self.graph.neighbors(i)) - set(theta))
         N_star = list()
-        t_sum = 0.0
-        for k in xrange(len(theta) - 1):
-            t_sum += self.times[theta[k]][theta[k + 1]]
         for n in N:
-            if t_sum + self.times[i][n] <= self.horizon:
+            if  T + self.times[i][n] <= self.horizon:
                 N_star.append(n)
         return N_star
 
-    def weight(self, i, j, t, theta=None):
-        if theta is None:
-            theta = list()
+    def weight(self, i, j, t):
+        to_search = list()
+        for k in self.graph.neighbors(j):
+            to_search.append((j, k, t + self.times[i][j], self.times[i][j]))
+        already_searched = set([i])
         ret_w = self.naive_weight(i, j, t)
-        for k in self.eligible_neighbours(i, theta):
-            ret_w += self.weight(j, k, t + self.times[i][j], theta + [i])
+        while len(to_search) > 0:
+            i_s, j_s, t_s, T_s = to_search.pop()
+            ret_w += self.naive_weight(i_s, j_s, t_s)
+            ns = self.eligible_neighbours(j_s, T_s + self.times[i_s][j_s],
+                                          already_searched)
+            already_searched.update(ns)
+            for k in ns:
+                to_search.append((j_s, k, t_s + self.times[i_s][j_s],
+                                  T_s + self.times[i_s][j_s]))
         return ret_w
 
     def move(self, i, t):

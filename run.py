@@ -9,7 +9,7 @@ if __name__ == "__main__":
     k = 10
     G = linza.nn_roadmap(N, k)
     caps = [100 for _ in xrange(N)]
-    horizon = 3
+    horizon = 0.1
     speed = 0.01
     res = [lambda t: t if t < caps[i] else caps[i] for i in xrange(N)]
     vis = linza.Visualizer(G, res)
@@ -17,7 +17,7 @@ if __name__ == "__main__":
         G, capacities=caps,
         horizon=horizon,
         speed=speed,
-        visualizer=vis,
+        visualizer=None,
         agents=a
     )
 
