@@ -55,7 +55,10 @@ class Linza(object):
 
     def run(self, num_runs):
         heapq.heapify(self.agent_heap)
+        for _, i, _ in self.agent_heap:
+            self.pl.update_last_time(i, 0)
         for k in xrange(num_runs):
             t, i, a = heapq.heappop(self.agent_heap)
             i_new, t_new = self.pl.move(i, t)
+            self.pl.update_last_time(i_new, t_new)
             heapq.heappush(self.agent_heap, (t_new, i_new, a))
