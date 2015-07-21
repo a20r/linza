@@ -41,7 +41,7 @@ class Linza(object):
         n_nodes = len(self.graph.nodes())
         means = np.zeros((n_nodes, 1))
         for i, cap in enumerate(self.capacities):
-            means[i] = 0.1 * cap
+            means[i] = 1
         return means
 
     def update_time(self, i, j, t):
@@ -67,5 +67,5 @@ class Linza(object):
             if self.visualizer:
                 self.visualizer.draw(
                     i, i_new, t_new,
-                    self.pl.get_last_time(i_new))
+                    self.pl.last_times)
             self.pl.update_last_time(i_new, t_new)

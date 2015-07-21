@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 class Visualizer:
 
     OCCUPIED = "b"
-    FREE = "0.94"
+    FREE = "r"
     K = 10
 
     def __init__(self, G, resources):
@@ -15,13 +15,13 @@ class Visualizer:
         self.fig = plt.figure()
         self.node_colors = [self.FREE for r in self.G.nodes()]
 
-    def draw(self, past_id, next_id, t, t_l):
+    def draw(self, past_id, next_id, t, lt):
         self.node_colors[past_id] = self.FREE
         self.node_colors[next_id] = self.OCCUPIED
         node_sizes = list()
         positions = dict()
         for r in self.G.nodes():
-            node_sizes.append(self.K * self.resources[r](t - t_l))
+            node_sizes.append(self.K * self.resources[r](t - lt[r]))
         for node_id in self.G.nodes():
             positions[node_id] = self.G.node[node_id]['position'].to_list_2d()
         plt.clf()
