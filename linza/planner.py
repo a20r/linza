@@ -5,7 +5,7 @@ import math
 
 class Planner(object):
 
-    def __init__(self, graph, times, costs, means, capacities, horizon):
+    def __init__(self, graph, capacities, horizon, times, costs, means):
         self.graph = graph
         self.times = times
         self.costs = costs
@@ -13,6 +13,10 @@ class Planner(object):
         self.capacities = capacities
         self.horizon = horizon
         self.last_times = collections.defaultdict(int)
+
+    def update_last_time(self, i, t):
+        self.last_times[i] = t
+        return self
 
     def resource(self, i, j, t):
         ret_sum = 0.0
@@ -53,4 +57,4 @@ class Planner(object):
             if w > max_weight:
                 best_node = j
                 max_weight = w
-        return best_node
+        return best_node, t + self.times[i][best_node]
