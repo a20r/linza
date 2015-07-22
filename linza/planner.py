@@ -24,12 +24,12 @@ class Planner(object):
     def resource(self, i, j, t):
         ret_sum = 0.0
         for k in xrange(1, self.capacities[j] + 1):
-            l_k = math.pow(self.means[j], k)
-            t_k = math.pow(t - self.last_times[j] + self.times[i][j], k)
-            e_pow = self.means[j] * (t - self.last_times[j] + self.times[i][j])
-            e_l = math.exp(-e_pow)
+            T = t - self.last_times[j] + self.times[i][j]
+            param = self.means[j] * T
+            l_k = math.pow(param, k)
+            e_l = math.exp(-param)
             fac = math.factorial(k - 1)
-            ret_sum += l_k * t_k * e_l / fac
+            ret_sum += l_k * e_l / fac
         return ret_sum
 
     def naive_weight(self, i, j, t):
@@ -39,7 +39,7 @@ class Planner(object):
         N = list(set(self.graph.neighbors(i)) - set(theta))
         N_star = list()
         for n in N:
-            if  T + self.times[i][n] <= self.horizon:
+            if T + self.times[i][n] <= self.horizon:
                 N_star.append(n)
         return N_star
 

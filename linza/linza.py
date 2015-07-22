@@ -34,7 +34,7 @@ class Linza(object):
         for i in self.graph.nodes():
             for j in self.graph.neighbors(i):
                 t = self.graph[i][j]["distance"] / self.speed
-                costs[i][j] = pow(t + 1, 2)
+                costs[i][j] = pow(t + 1, 1)
         return costs
 
     def init_means(self):

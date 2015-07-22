@@ -1,7 +1,7 @@
 
-__all__ = ["Planner", "Linza", "nn_roadmap", "Visualizer"]
+__all__ = ["Planner", "Linza", "nn_roadmap", "Visualizer", "grid_graph"]
 
 from planner import Planner
 from linza import Linza
 from visualizer import Visualizer
-from prm import nn_roadmap
+from graphs import nn_roadmap, grid_graph
