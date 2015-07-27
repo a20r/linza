@@ -1,24 +1,34 @@
 
 import numpy as np
+import random
 import heapq
 import planner
+from progressbar import ProgressBar
 
 
 class Linza(object):
 
     def __init__(self, graph, **kwargs):
         self.graph = graph
-        self.capacities = kwargs["capacities"]
         self.horizon = kwargs["horizon"]
         self.speed = kwargs["speed"]
+        self.rate_funcs = kwargs["rate_funcs"]
+        self.entropies = kwargs["entropies"]
+        self.eps_time = kwargs["eps_time"]
         self.visualizer = kwargs.get("visualizer", None)
-        self.agent_heap = [(0, i, a) for a, i in enumerate(kwargs["agents"])]
+        self.agent_heap = self.init_agent_heap(kwargs["agents"])
         self.times = self.init_times()
         self.costs = self.init_costs()
-        self.means = self.init_means()
-        self.pl = planner.Planner(self.graph, capacities=self.capacities,
-                                  horizon=self.horizon, times=self.times,
-                                  costs=self.costs, means=self.means)
+        self.pl = planner.Planner(self.graph, times=self.times,
+                                  rate_funcs=self.rate_funcs,
+                                  entropies=self.entropies, costs=self.costs,
+                                  horizon=self.horizon, eps_time=self.eps_time)
+
+    def init_agent_heap(self, agents):
+        agent_heap = list()
+        for a, i in enumerate(agents):
+            agent_heap.append((0, i, a))
+        return agent_heap
 
     def init_times(self):
         n_nodes = len(self.graph.nodes())
@@ -37,13 +47,6 @@ class Linza(object):
                 costs[i][j] = pow(t + 1, 1)
         return costs
 
-    def init_means(self):
-        n_nodes = len(self.graph.nodes())
-        means = np.zeros((n_nodes, 1))
-        for i, cap in enumerate(self.capacities):
-            means[i] = 1
-        return means
-
     def update_time(self, i, j, t):
         self.times[i][j] = t
         return self
@@ -58,23 +61,10 @@ class Linza(object):
 
     def run(self, num_runs):
         heapq.heapify(self.agent_heap)
-        total_resource = 0.0
-        total_cost = 0.0
-        for _, i, _ in self.agent_heap:
-            self.pl.update_last_time(i, 0)
-        for k in xrange(num_runs):
+        progress = ProgressBar()
+        for k in progress(xrange(num_runs)):
             t, i, a = heapq.heappop(self.agent_heap)
             i_new, t_new = self.pl.move(i, t)
-            total_resource += self.pl.resource(i, i_new, t)
-            total_cost += self.pl.times[i, i_new]
             heapq.heappush(self.agent_heap, (t_new, i_new, a))
-            print "Move:", k
-            print "From:", i
-            print "To:", i_new
-            print ""
-            self.pl.update_last_time(i_new, t_new)
             if self.visualizer:
-                self.visualizer.draw(
-                    i, i_new, t_new,
-                    self.pl.last_times)
-        return total_resource, total_cost, t
+                self.visualizer.draw(i, i_new, t_new)

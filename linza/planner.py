@@ -1,7 +1,4 @@
 
-import collections
-import math
-
 
 class Planner(object):
 
@@ -9,31 +6,17 @@ class Planner(object):
         self.graph = graph
         self.times = kwargs["times"]
         self.costs = kwargs["costs"]
-        self.means = kwargs["means"]
-        self.capacities = kwargs["capacities"]
+        self.rate_funcs = kwargs["rate_funcs"]
+        self.entropies = kwargs["entropies"]
         self.horizon = kwargs["horizon"]
-        self.last_times = collections.defaultdict(int)
+        self.eps_time = kwargs["eps_time"]
 
-    def update_last_time(self, i, t):
-        self.last_times[i] = t
-        return self
-
-    def get_last_time(self, i):
-        return self.last_times[i]
-
-    def resource(self, i, j, t):
-        ret_sum = 0.0
-        for k in xrange(1, self.capacities[j] + 1):
-            T = t - self.last_times[j] + self.times[i][j]
-            param = self.means[j] * T
-            l_k = math.pow(param, k)
-            e_l = math.exp(-param)
-            fac = math.factorial(k - 1)
-            ret_sum += l_k * e_l / fac
-        return ret_sum
+    def events(self, i, t, t_diff):
+        return self.rate_funcs[i].integral(t, t + t_diff)
 
     def naive_weight(self, i, j, t):
-        return self.resource(i, j, t) / self.costs[i][j]
+        evs = self.events(j, t + self.times[i][j], self.eps_time)
+        return self.entropies[j] * evs
 
     def eligible_neighbours(self, i, T, theta):
         N = list(set(self.graph.neighbors(i)) - set(theta))
@@ -68,4 +51,4 @@ class Planner(object):
             if w > max_weight:
                 best_node = j
                 max_weight = w
-        return best_node, t + self.times[i][best_node]
+        return best_node, t + self.times[i][best_node] + self.eps_time
