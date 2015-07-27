@@ -62,9 +62,12 @@ class Linza(object):
     def run(self, num_runs):
         heapq.heapify(self.agent_heap)
         progress = ProgressBar()
+        total_weight = 0.0
         for k in progress(xrange(num_runs)):
             t, i, a = heapq.heappop(self.agent_heap)
             i_new, t_new = self.pl.move(i, t)
+            total_weight += self.pl.naive_weight(i, i_new, t)
             heapq.heappush(self.agent_heap, (t_new, i_new, a))
             if self.visualizer:
                 self.visualizer.draw(i, i_new, t_new)
+        return total_weight
